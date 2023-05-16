@@ -1,14 +1,9 @@
 :root {
-	--color-blue: #1effff;
-	--color-dGreen: #008f11;
-	--color-black: #000000;
-	/* --background-rgb: 29 30 34; */
-	--background-rgb: 0 0 0;
+	--color-blue: 33 150 243;
+	--color-red: 238 9 9;
 
-	--blue-rgb: 33 150 243;
-	--dGreen-rgb: 0 143 17;
-	--lGreen-rgb: 0 255 65;
-	--primary-rgb: var(--lGreen-rgb);
+	--hero-color: var(--color-blue);
+	--ai-color: var(--color-red);
 }
 
 * {
@@ -16,14 +11,16 @@
 }
 
 .container {
-	background-color: black;
+	/* background-color: black; */
 	height: 100vh;
 	width: 100vw;
+	background-image: url("/img/Background.jpg");
+	background-position: center;
+	background-size: cover;
 }
 
 .header {
 	height: 100px;
-	background-color: #008f11;
 }
 
 .play-area {
@@ -40,14 +37,21 @@
 
 .screen {
 	aspect-ratio: 9 / 16;
-	background-color: rgb(var(--primary-rgb) / 15%);
 	border-radius: 1rem;
-	border: 3px solid rgb(var(--primary-rgb) / 80%);
 	display: flex;
 	overflow: hidden;
 	position: relative;
 	width: 250px;
 	z-index: 10;
+}
+
+.screen.hero {
+	background-color: rgb(var(--hero-color) / 15%);
+	border: 3px solid rgb(var(--hero-color) / 80%);
+}
+.screen.opponent {
+	background-color: rgb(var(--ai-color) / 15%);
+	border: 3px solid rgb(var(--ai-color) / 80%);
 }
 
 .screen:after,
@@ -87,13 +91,7 @@
 
 .screen-overlay {
 	animation: pan-overlay 22s infinite linear;
-	background: linear-gradient(
-		rgb(var(--primary-rgb) / 0.15),
-		rgb(var(--primary-rgb) / 0.15) 3px,
-		transparent 3px,
-		transparent 9px
-	);
-	background-size: 100% 9px;
+
 	height: 100%;
 	left: 0px;
 	position: absolute;
@@ -102,10 +100,29 @@
 	z-index: 2;
 }
 
+.screen.hero > .screen-overlay {
+	background: linear-gradient(
+		rgb(var(--hero-color) / 0.15),
+		rgb(var(--hero-color) / 0.15) 3px,
+		transparent 3px,
+		transparent 9px
+	);
+	background-size: 100% 9px;
+}
+
+.screen.opponent > .screen-overlay {
+	background: linear-gradient(
+		rgb(var(--ai-color) / 0.15),
+		rgb(var(--ai-color) / 0.15) 3px,
+		transparent 3px,
+		transparent 9px
+	);
+	background-size: 100% 9px;
+}
+
 .screen-image {
-	background-image: url("https://images.unsplash.com/photo-1515266591878-f93e32bc5937?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2574&q=80");
-	background-position: 0% 0%;
-	background-size: 300%;
+	background-position: center;
+	background-size: cover;
 	filter: sepia(100%) hue-rotate(160deg);
 	height: 100%;
 	left: 0px;
@@ -116,10 +133,18 @@
 	z-index: 1;
 }
 
+.hero .screen-image {
+	background-image: url("/img/Hero_Byte.jpg");
+}
+
+.opponent .screen-image {
+	background-image: url("/img/AI_Nexus5.jpg");
+}
+
 .screen-content {
 	align-items: center;
 	border-radius: 0.6rem;
-	border: 1px solid rgb(var(--primary-rgb) / 50%);
+
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
@@ -129,6 +154,14 @@
 	padding-bottom: 6rem;
 	position: relative;
 	z-index: 3;
+}
+
+.screen.hero > .screen-content {
+	border: 1px solid rgb(var(--hero-color) / 50%);
+}
+
+.screen.opponent > .screen-content {
+	border: 1px solid rgb(var(--ai-color) / 50%);
 }
 
 .screen-user {
@@ -141,25 +174,47 @@
 
 .screen-user:before,
 .screen-user:after {
-	background-color: rgb(var(--primary-rgb));
 	border-radius: 1rem;
-	box-shadow: 0px 0px 8px 3px rgb(var(--primary-rgb) / 60%);
 	content: "";
 	position: absolute;
 	top: 0px;
 }
 
-.screen-user:before {
+.screen.hero .screen-user:before,
+.screen.hero .screen-user:after {
+	background-color: rgb(var(--hero-color));
+	box-shadow: 0px 0px 8px 3px rgb(var(--hero-color) / 60%);
+}
+
+.screen.opponent .screen-user:before,
+.screen.opponent .screen-user:after {
+	background-color: rgb(var(--ai-color));
+	box-shadow: 0px 0px 8px 3px rgb(var(--ai-color) / 60%);
+}
+
+.screen.hero .screen-user:before {
 	height: 2px;
 	opacity: 0.75;
 	translate: -20px -1rem;
 	width: 50px;
 }
 
-.screen-user:after {
+.screen.hero .screen-user:after {
 	height: 3px;
 	translate: 26px calc(-1rem - 0.5px);
 	width: 30px;
+}
+.screen.opponent .screen-user:before {
+	height: 3px;
+	translate: -20px -1rem;
+	width: 30px;
+}
+
+.screen.opponent .screen-user:after {
+	height: 2px;
+	opacity: 0.75;
+	translate: 26px calc(-1rem - 0.5px);
+	width: 50px;
 }
 
 .name {
