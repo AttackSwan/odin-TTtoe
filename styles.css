@@ -37,7 +37,6 @@
 	height: 450px;
 	justify-items: center;
 	margin: auto;
-	column-gap: 64px;
 }
 
 .players,
@@ -60,10 +59,12 @@
 .screen.hero {
 	background-color: rgb(var(--hero-color) / 15%);
 	border: 3px solid rgb(var(--hero-color) / 80%);
+	margin-right: 64px;
 }
 .screen.opponent {
 	background-color: rgb(var(--ai-color) / 15%);
 	border: 3px solid rgb(var(--ai-color) / 80%);
+	margin-left: 64px;
 }
 
 .screen:after,
@@ -257,6 +258,34 @@
 .name:after {
 	left: -1.5rem;
 	top: 45%;
+}
+
+/* BUTTONS */
+.button-container {
+	display: flex;
+	align-items: center;
+}
+
+.players > .button-container {
+	justify-content: right;
+}
+
+.button-container button {
+	height: 50px;
+	width: 150px;
+}
+
+.strip {
+	height: 3px;
+	width: 100px;
+}
+
+.players .strip {
+	background-color: rgb(var(--hero-color) / 80%);
+}
+
+.ai .strip {
+	background-color: rgb(var(--ai-color) / 80%);
 }
 
 /* GAME BOARD */
