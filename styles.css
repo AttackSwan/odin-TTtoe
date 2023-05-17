@@ -293,30 +293,6 @@
 	background-color: rgb(var(--ai-color) / 80%);
 }
 
-/* .players button,
-.ai button {
-	border-radius: 1rem;
-	background: rgba(0, 0, 0, 0.5);
-}
-
-.players button {
-	border: 3px solid rgb(var(--hero-color));
-	color: rgb(var(--hero-color));
-}
-
-.players button:hover {
-	background-color: rgb(var(--hero-color) / 50%);
-	color: white;
-	font-size: 0.9rem;
-	font-weight: 600;
-	border: 3px solid rgb(0, 255, 255);
-}
-
-.ai button {
-	border: 3px solid rgb(var(--ai-color));
-	color: rgb(var(--ai-color));
-} */
-
 .glitch-button {
 	width: 230px;
 	height: 60px;
@@ -325,7 +301,7 @@
 	background-color: var(--black-color);
 	cursor: pointer;
 	position: relative;
-	font-family: Tomorrow, sans-serif;
+	font-family: "Orbitron", sans-serif;
 	font-size: 0.85rem;
 	text-transform: uppercase;
 	color: var(--black-color);
@@ -336,7 +312,7 @@
 }
 
 .ai .glitch-button {
-	clip-path: polygon(100% 0%, 100% 75%, 90% 100%, 0% 100%, 0% 25%, 10% 0);
+	clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 88% 100%, 0% 100%);
 }
 
 .glitch-button__content {
@@ -355,7 +331,7 @@
 	clip-path: polygon(0% 0%, 0% 75%, 12% 100%, 100% 100%, 100% 100%, 100% 0);
 }
 .ai .glitch-button__content {
-	clip-path: polygon(100% 0%, 100% 75%, 90% 100%, 0% 100%, 0% 25%, 10% 0);
+	clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 88% 100%, 0% 100%);
 }
 
 .glitch-button__label {
