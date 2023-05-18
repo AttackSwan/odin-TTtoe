@@ -38,7 +38,7 @@
 
 .play-area {
 	display: grid;
-	grid-template-columns: min-content min-content 450px min-content min-content;
+	grid-template-columns: repeat(5, min-content);
 	height: 450px;
 	justify-items: center;
 	margin: auto;
@@ -49,6 +49,10 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: space-evenly;
+}
+
+.ai {
+	display: none;
 }
 
 .screen {
@@ -491,7 +495,7 @@
 
 /* GAME BOARD */
 .board {
-	width: 100%;
+	width: 450px;
 	height: 100%;
 	box-shadow: 16px 14px 20px #0000008c;
 	border: solid 3px rgb(var(--game-board) / 80%);
@@ -522,6 +526,11 @@
 .tl {
 	border-radius: 0.6rem 0 0 0;
 }
+.filter-yellow {
+	filter: invert(87%) sepia(99%) saturate(7499%) hue-rotate(349deg)
+		brightness(100%) contrast(98%);
+}
+
 .tr {
 	border-radius: 0 0.6rem 0 0;
 }

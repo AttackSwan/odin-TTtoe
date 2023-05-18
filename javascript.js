@@ -4,13 +4,39 @@ const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const glitchButtons = document.querySelectorAll(".glitch-button");
 
-let stageOfPlay = 0; // entry into game
+let stageOfPlay = "choosePlayer"; // entry into game
 
 function addButtonListeners() {
 	glitchButtons.forEach((button) => {
 		button.addEventListener("mouseenter", changeImage);
+		button.addEventListener("click", selectCharacter);
 	});
 }
+
+function selectCharacter() {
+	const playersDiv = document.querySelector(".players");
+	const aiDiv = document.querySelector(".ai");
+	const gameBoard = document.querySelector(".board");
+
+	//play a selection sound and hide buttons on choice
+	if (stageOfPlay === "choosePlayer") {
+		stageOfPlay = "chooseAI";
+		//play sound
+		playersDiv.style.display = "none";
+		setTimeout(() => {
+			aiDiv.style.display = "flex";
+		}, 2000);
+	} else if (stageOfPlay === "chooseAI") {
+		stageOfPlay = "round";
+		//play sound
+		aiDiv.style.display = "none";
+		setTimeout(() => {
+			playRound();
+		}, 2000);
+	}
+}
+
+function playRound() {}
 
 function changeImage(e) {
 	const characterName = e.target
@@ -31,7 +57,11 @@ function changeImage(e) {
 	if (!characterType) {
 		characterType = "ai";
 	}
-	updateImage(characterName, characterType);
+
+	//If in character select stage of game
+	if (stageOfPlay === "choosePlayer" || "chooseAi") {
+		updateImage(characterName, characterType);
+	}
 }
 
 function updateImage(name, type) {
@@ -45,7 +75,6 @@ function updateImage(name, type) {
 }
 
 function updateScreenText(name, nameSpan) {
-	console.log(name, nameSpan);
 	let interval = null;
 	let iteration = 0;
 	clearInterval(interval);
