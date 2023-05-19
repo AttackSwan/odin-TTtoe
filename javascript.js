@@ -10,33 +10,6 @@ let audioOn = true;
 // 	});
 // })();
 
-function gameBoard() {
-	const board = [];
-	const cells = 9;
-
-	//Add cells to board grid
-	for (let i = 0; i < cells; i++) {
-		board[i] = Cell();
-	}
-
-	const getBoard = () => board;
-
-	const setToken = (cell, token) => {
-		//check if cell is empty, if so, drop token.
-		if (board[cell].getValue() === "") {
-			board[cell].addToken(token);
-		}
-	};
-
-	const resetBoard = () => {
-		for (let i = 0; i < cells; i++) {
-			board[i].reset();
-		}
-	};
-
-	return { getBoard, setToken, resetBoard };
-}
-
 function Cell() {
 	// Cell values:
 	// "" = empty
@@ -57,6 +30,29 @@ function Cell() {
 	return { getValue, addToken, reset };
 }
 
+function gameBoard() {
+	const board = [];
+	const cells = 9;
+
+	//Add cells to board grid
+	for (let i = 0; i < cells; i++) {
+		board[i] = Cell();
+	}
+
+	const getBoard = () => board;
+
+	const setToken = (cell, token) => {
+		let changed = false;
+		if (board[cell].getValue() === "") {
+			board[cell].addToken(token);
+			changed = true;
+		}
+		return changed;
+	};
+
+	return { getBoard, setToken };
+}
+
 const newCharacter = (name, type) => {
 	// Ensure player image is in the format "Hero_Name.jpg"
 	const img =
@@ -67,10 +63,10 @@ const newCharacter = (name, type) => {
 };
 
 function GameController() {
+	const aiNames = ["Nexus", "Cipher", "Omega"];
+	const playerNames = ["Byte", "Titan", "Claw", "Ace"];
 	const playerCharacters = [];
 	const aiCharacters = [];
-	const playerNames = ["Byte", "Titan", "Claw", "Ace"];
-	const aiNames = ["Nexus", "Cipher", "Omega"];
 	const players = ["Player", "AI"];
 
 	const board = gameBoard();
@@ -79,6 +75,7 @@ function GameController() {
 	let playerWins = 0;
 	let aiWins = 0;
 
+	//Create players and ai
 	playerNames.forEach((name) =>
 		playerCharacters.push(newCharacter(name, "player"))
 	);
@@ -87,6 +84,14 @@ function GameController() {
 	let activePlayer = playerCharacters[0];
 
 	const getActivePlayer = () => activePlayer;
+
+	const setPlayer = (hero) => {
+		// players[0] = hero;
+	};
+
+	const setAI = (ai) => {
+		// players[1] = ai;
+	};
 
 	const switchActivePlayer = () => {
 		activePlayer = activePlayer === players[0] ? players[1] : players[0];
@@ -103,13 +108,15 @@ function GameController() {
 	};
 
 	const playRound = (cell) => {
-		//check if cell is empty and if so
-		board.setToken(cell, getActivePlayer().token);
-		// switchActivePlayer();
-		displayBoard();
+		// Check if tageted cell changes and update game if it does
+		const cellChanged = board.setToken(cell, getActivePlayer().token);
+		if (cellChanged) {
+			// switchActivePlayer();
+			displayBoard();
+		}
 	};
 
-	return { playRound, getActivePlayer, getBoard };
+	return { playRound, setPlayer, setAI, getActivePlayer, getBoard };
 }
 
 function ScreenController() {
