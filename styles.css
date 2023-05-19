@@ -36,6 +36,12 @@
 	width: 100%;
 }
 
+.options {
+	height: 100%;
+	width: 100%;
+	display: none;
+}
+
 .play-area {
 	display: grid;
 	grid-template-columns: repeat(5, min-content);
@@ -244,7 +250,7 @@
 	font-weight: 400;
 	position: relative;
 	color: white;
-	font-family: "Source Code Pro", monospace;
+	font-family: "Orbitron", sans-serif;
 	text-align: center;
 	text-transform: uppercase;
 }
@@ -521,6 +527,11 @@
 .play-cell {
 	background-color: rgb(var(--game-board) / 10%);
 	border: 1px solid rgb(var(--game-board) / 50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 4.5rem;
+	font-weight: 600;
 }
 
 .tl {
