@@ -16,19 +16,16 @@ function gameBoard() {
 
 	//Add cells to board grid
 	for (let i = 0; i < cells; i++) {
-		board[i] = [];
-		board[i].push(Cell());
+		board[i] = Cell();
 	}
 
 	const getBoard = () => board;
 
 	const setToken = (cell, token) => {
 		//check if cell is empty, if so, drop token.
-		console.log(cell, token, board[cell]);
-
-		// if (board[cell].getValue() === 0) {
-		// 	board[cell].addToken(token);
-		// }
+		if (board[cell].getValue() === "") {
+			board[cell].addToken(token);
+		}
 	};
 
 	const resetBoard = () => {
@@ -42,10 +39,10 @@ function gameBoard() {
 
 function Cell() {
 	// Cell values:
-	// 0 = empty
+	// "" = empty
 	// 1 = player
 	// 2 = ai
-	let value = 0;
+	let value = "";
 
 	const getValue = () => value;
 
@@ -127,6 +124,7 @@ function ScreenController() {
 			const cellButton = document.createElement("button");
 			cellButton.classList.add("play-cell");
 			cellButton.dataset.cell = index;
+			cellButton.textContent = cell.getValue();
 			boardDiv.appendChild(cellButton);
 		});
 	};
