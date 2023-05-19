@@ -1,14 +1,4 @@
-const glitchButtons = document.querySelectorAll(".glitch-button");
-
-let stageOfPlay = "choosePlayer"; // entry into game
 let audioOn = true;
-
-// (function addButtonListeners() {
-// 	glitchButtons.forEach((button) => {
-// 		button.addEventListener("mouseenter", changeImage);
-// 		button.addEventListener("click", selectCharacter);
-// 	});
-// })();
 
 function Cell() {
 	// Cell values:
@@ -63,35 +53,17 @@ const newCharacter = (name, type) => {
 };
 
 function GameController() {
-	const aiNames = ["Nexus", "Cipher", "Omega"];
-	const playerNames = ["Byte", "Titan", "Claw", "Ace"];
-	const playerCharacters = [];
-	const aiCharacters = [];
-	const players = ["Player", "AI"];
-
 	const board = gameBoard();
 
 	let difficulty = 0;
 	let playerWins = 0;
 	let aiWins = 0;
 
-	//Create players and ai
-	playerNames.forEach((name) =>
-		playerCharacters.push(newCharacter(name, "player"))
-	);
-	aiNames.forEach((name) => aiCharacters.push(newCharacter(name, "ai")));
+	const players = game.getPlayers;
 
-	let activePlayer = playerCharacters[0];
+	let activePlayer = players[0];
 
 	const getActivePlayer = () => activePlayer;
-
-	const setPlayer = (hero) => {
-		// players[0] = hero;
-	};
-
-	const setAI = (ai) => {
-		// players[1] = ai;
-	};
 
 	const switchActivePlayer = () => {
 		activePlayer = activePlayer === players[0] ? players[1] : players[0];
@@ -116,7 +88,7 @@ function GameController() {
 		}
 	};
 
-	return { playRound, setPlayer, setAI, getActivePlayer, getBoard };
+	return { playRound, getActivePlayer, getBoard };
 }
 
 function ScreenController() {
@@ -151,95 +123,125 @@ function ScreenController() {
 	updateScreen();
 }
 
-// (function addCharacters() {
-// 	const playerNames = ["Byte", "Titan", "Claw", "Ace"];
-// 	const aiNames = ["Nexus", "Cipher", "Omega"];
+const getCharacterChoices = () => {
+	const heros = ["Byte", "Titan", "Claw", "Ace"];
+	const ai = ["Nexus", "Cipher", "Omega"];
+	const players = [];
 
-// 	playerNames.forEach((name) =>
-// 		playerCharacters.push(newCharacter(name, "player"))
-// 	);
-// 	aiNames.forEach((name) => aiCharacters.push(newCharacter(name, "ai")));
-// })();
+	const glitchButtons = document.querySelectorAll(".glitch-button");
 
-// function selectCharacter() {
-// 	const playersDiv = document.querySelector(".players");
-// 	const aiDiv = document.querySelector(".ai");
-// 	const gameBoard = document.querySelector(".board");
-// 	const audioAI = new Audio("/sound/enemy.mp3");
-// 	const audioR1 = new Audio("/sound/round1.mp3");
+	let stageOfPlay = "choosePlayer"; // entry into game
 
-// 	//play a selection sound and hide buttons on choice
-// 	if (stageOfPlay === "choosePlayer") {
-// 		stageOfPlay = "chooseAI";
-// 		playersDiv.style.display = "none";
-// 		audioOn ? audioAI.play() : null;
-// 		setTimeout(() => {
-// 			aiDiv.style.display = "flex";
-// 		}, 1000);
-// 	} else if (stageOfPlay === "chooseAI") {
-// 		stageOfPlay = "round";
-// 		aiDiv.style.display = "none";
-// 		setTimeout(() => {
-// 			playRound();
-// 		}, 2000);
-// 		audioOn ? audioR1.play() : null;
-// 	}
-// }
+	const getPlayers = () => players;
 
-// function changeImage(e) {
-// 	const audioBeep = new Audio("/sound/beep.mp3");
-// 	const characterName = e.target
-// 		.closest(".button-container")
-// 		.getAttribute("id");
-// 	let characterType;
-// 	let imageDiv;
-// 	let nameSpan;
+	function addButtonListeners() {
+		glitchButtons.forEach((button) => {
+			button.addEventListener("mouseenter", changeImage);
+			button.addEventListener("click", selectCharacter);
+		});
+	}
 
-// 	audioOn ? audioBeep.play() : null;
+	function changeImage(e) {
+		const audioBeep = new Audio("/sound/beep.mp3");
 
-// 	//Check if character is player or ai and
-// 	playerCharacters.forEach((character) => {
-// 		if (character.name === characterName) {
-// 			characterType = "player";
-// 		}
-// 	});
-// 	if (!characterType) {
-// 		characterType = "ai";
-// 	}
+		audioOn ? audioBeep.play() : null;
 
-// 	updateImage(characterName, characterType);
-// }
+		// Get character name and type on button hover
+		const name = characterName(e);
+		const type = characterType(name);
 
-// function updateImage(name, type) {
-// 	const screen = type === "player" ? "hero" : "opponent";
-// 	const imgPrefix = type === "player" ? "Hero_" : "AI_";
-// 	const imageDiv = document.querySelector(`.screen.${screen} .screen-image`);
-// 	const nameSpan = document.querySelector(`.screen.${screen} .name`);
+		updateImage(name, type);
+	}
 
-// 	imageDiv.style.backgroundImage = `url(/img/${imgPrefix}${name}.jpg)`;
-// 	updateScreenText(name, nameSpan);
-// }
+	const characterName = (e) => {
+		const characterName = e.target
+			.closest(".button-container")
+			.getAttribute("id");
 
-// function updateScreenText(name, nameSpan) {
-// 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-// 	let interval = null;
-// 	let iteration = 0;
-// 	clearInterval(interval);
-// 	interval = setInterval(() => {
-// 		nameSpan.innerText = nameSpan.dataset.value
-// 			.split("")
-// 			.map((letter, index) => {
-// 				if (index < iteration) {
-// 					return name[index];
-// 				}
-// 				return letters[Math.floor(Math.random() * 26)];
-// 			})
-// 			.join("");
-// 		if (iteration >= nameSpan.dataset.value.length) {
-// 			clearInterval(interval);
-// 		}
-// 		iteration += 1 / 3;
-// 	}, 30);
-// }
+		return characterName;
+	};
 
-ScreenController();
+	const characterType = (characterName) => {
+		let characterType;
+		heros.forEach((hero) => {
+			if (hero === characterName) {
+				characterType = "player";
+			}
+		});
+		if (!characterType) {
+			characterType = "ai";
+		}
+
+		return characterType;
+	};
+
+	function updateImage(name, type) {
+		//Select appropriate screen and image prefix to match DOM
+		const screen = type === "player" ? "hero" : "opponent";
+		const imgPrefix = type === "player" ? "Hero_" : "AI_";
+		const imageDiv = document.querySelector(
+			`.screen.${screen} .screen-image`
+		);
+		const nameSpan = document.querySelector(`.screen.${screen} .name`);
+		imageDiv.style.backgroundImage = `url(/img/${imgPrefix}${name}.jpg)`;
+
+		updateScreenText(name, nameSpan);
+	}
+
+	function updateScreenText(name, nameSpan) {
+		//Make letters cycle randomly when hero image is changed
+		//Return new hero name
+		const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		let interval = null;
+		let iteration = 0;
+		clearInterval(interval);
+		interval = setInterval(() => {
+			nameSpan.innerText = nameSpan.dataset.value
+				.split("")
+				.map((letter, index) => {
+					if (index < iteration) {
+						return name[index];
+					}
+					return letters[Math.floor(Math.random() * 26)];
+				})
+				.join("");
+			if (iteration >= nameSpan.dataset.value.length) {
+				clearInterval(interval);
+			}
+			iteration += 1 / 3;
+		}, 30);
+	}
+
+	function selectCharacter(e) {
+		const playersDiv = document.querySelector(".players");
+		const aiDiv = document.querySelector(".ai");
+		const gameBoard = document.querySelector(".board");
+		const audioAI = new Audio("/sound/enemy.mp3");
+		const audioR1 = new Audio("/sound/round1.mp3");
+
+		const name = characterName(e);
+		const type = characterType(name);
+
+		const newPlayer = newCharacter(name, type);
+
+		//play a selection sound and hide buttons on click
+		if (stageOfPlay === "choosePlayer") {
+			playersDiv.style.display = "none";
+			audioOn ? audioAI.play() : null;
+			stageOfPlay = "chooseAI";
+			aiDiv.style.display = "flex";
+			players.push(newCharacter);
+		} else if (stageOfPlay === "chooseAI") {
+			aiDiv.style.display = "none";
+			audioOn ? audioR1.play() : null;
+			stageOfPlay = "round";
+			players.push(newCharacter);
+		}
+	}
+
+	addButtonListeners();
+
+	return { getPlayers };
+};
+
+const game = getCharacterChoices();
