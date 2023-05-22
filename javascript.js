@@ -31,16 +31,17 @@ function gameBoard() {
 
 	const getBoard = () => board;
 
-	const setToken = (cell, token) => {
-		let changed = false;
-		if (board[cell].getValue() === "") {
-			board[cell].addToken(token);
-			changed = true;
-		}
-		return changed;
+	const checkCellBlank = (cell) => {
+		return board[cell].getValue() === "" ? true : false;
 	};
 
-	return { getBoard, setToken };
+	const setToken = (cell, token) => {
+		if (board[cell].getValue() === "") {
+			board[cell].addToken(token);
+		}
+	};
+
+	return { getBoard, checkCellBlank, setToken };
 }
 
 const newCharacter = (name, type) => {
@@ -60,10 +61,41 @@ function GameController() {
 	let aiWins = 0;
 
 	let players = UI.getPlayers();
-
 	let activePlayer = players[0];
-
 	const getActivePlayer = () => activePlayer;
+
+	const winningCombinations = [
+		//Vertical
+		[0, 1, 2],
+		[3, 4, 5],
+		[6, 7, 8],
+		//Horizontal
+		[0, 3, 6],
+		[1, 4, 7],
+		[2, 5, 8],
+		//Diagonal
+		[0, 4, 8],
+		[2, 4, 6],
+	];
+
+	const checkForVictory = () => {
+		let victory = false;
+		let cells = document.querySelectorAll(".play-cell");
+
+		winningCombinations.forEach((combo) => {
+			// Check if winning cells all match and are not blank
+			if (
+				cells[combo[0]].textContent == cells[combo[1]].textContent &&
+				cells[combo[1]].textContent == cells[combo[2]].textContent &&
+				cells[combo[0]].textContent != ""
+			) {
+				victory = true;
+				alert("Victory!");
+			}
+		});
+
+		return victory;
+	};
 
 	const switchActivePlayer = () => {
 		activePlayer = activePlayer === players[0] ? players[1] : players[0];
@@ -80,15 +112,15 @@ function GameController() {
 	};
 
 	const playRound = (cell) => {
-		// Check if tageted cell changes and update game if it does
-		const cellChanged = board.setToken(cell, getActivePlayer().token);
-		if (cellChanged) {
-			// switchActivePlayer();
-			displayBoard();
+		//change cell if it is empty
+		let cellIsBlank = board.checkCellBlank(cell);
+		if (cellIsBlank) {
+			board.setToken(cell, getActivePlayer().token);
+			switchActivePlayer();
 		}
 	};
 
-	return { playRound, getActivePlayer, getBoard };
+	return { playRound, checkForVictory, getActivePlayer, getBoard };
 }
 
 function ScreenController() {
@@ -106,6 +138,7 @@ function ScreenController() {
 			cellButton.textContent = cell.getValue();
 			boardDiv.appendChild(cellButton);
 		});
+		console.log(game.checkForVictory());
 	};
 
 	//add cell listeners
