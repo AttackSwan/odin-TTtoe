@@ -57,12 +57,11 @@ function GameController() {
 	const board = gameBoard();
 
 	let difficulty = 0;
-	let playerWins = 0;
-	let aiWins = 0;
+	let gameState = "playing";
+	let turns = 0;
 
 	let players = UI.getPlayers();
 	let activePlayer = players[0];
-	const getActivePlayer = () => activePlayer;
 
 	const winningCombinations = [
 		//Vertical
@@ -78,23 +77,37 @@ function GameController() {
 		[2, 4, 6],
 	];
 
-	const checkForVictory = () => {
-		let victory = false;
-		let cells = document.querySelectorAll(".play-cell");
+	const getActivePlayer = () => activePlayer;
+
+	const getGameState = () => gameState;
+
+	const checkConditions = () => {
+		const cells = document.querySelectorAll(".play-cell");
 
 		winningCombinations.forEach((combo) => {
+			let player = players[0];
+			let ai = players[1];
+			let winner = ai;
+
 			// Check if winning cells all match and are not blank
 			if (
 				cells[combo[0]].textContent == cells[combo[1]].textContent &&
 				cells[combo[1]].textContent == cells[combo[2]].textContent &&
 				cells[combo[0]].textContent != ""
 			) {
-				victory = true;
-				alert("Victory!");
+				//check if win uses player's token otherwise default to ai
+				if (cells[combo[0]].textContent === player.token) {
+					winner = player;
+				}
+				// gameWin(winner);
+				gameState = "win";
+				console.log(`${winner.name} wins!`);
+			} else if (turns === 9) {
+				gameState = "draw";
+				console.log("Draw!");
+				// gameDraw();
 			}
 		});
-
-		return victory;
 	};
 
 	const switchActivePlayer = () => {
@@ -112,15 +125,23 @@ function GameController() {
 	};
 
 	const playRound = (cell) => {
-		//change cell if it is empty
+		turns++;
 		let cellIsBlank = board.checkCellBlank(cell);
-		if (cellIsBlank) {
+
+		//check if move wins the round
+		if (cellIsBlank && gameState === "playing") {
 			board.setToken(cell, getActivePlayer().token);
 			switchActivePlayer();
 		}
 	};
 
-	return { playRound, checkForVictory, getActivePlayer, getBoard };
+	return {
+		playRound,
+		checkConditions,
+		getGameState,
+		getActivePlayer,
+		getBoard,
+	};
 }
 
 function ScreenController() {
@@ -130,6 +151,7 @@ function ScreenController() {
 	const updateScreen = () => {
 		const board = game.getBoard();
 		boardDiv.textContent = "";
+
 		//create board grid
 		board.forEach((cell, index) => {
 			const cellButton = document.createElement("button");
@@ -138,7 +160,11 @@ function ScreenController() {
 			cellButton.textContent = cell.getValue();
 			boardDiv.appendChild(cellButton);
 		});
-		console.log(game.checkForVictory());
+
+		//Check for draw or victory after cell update
+		if (game.getGameState() === "playing") {
+			game.checkConditions();
+		}
 	};
 
 	//add cell listeners
