@@ -51,27 +51,42 @@ function gameBoard() {
 		}
 	};
 
-	return { getBoard, checkCellBlank, setToken };
+	const reset = () => {
+		for (let i = 0; i < cells; i++) {
+			board[i].reset();
+		}
+	};
+
+	return { getBoard, checkCellBlank, setToken, reset };
 }
 
 const newCharacter = (name, type) => {
+	let wins = 0;
+
 	// Ensure player image is in the format "Hero_Name.jpg"
 	const img =
 		type === "player" ? `/img/Hero_${name}.jpg` : `/img/AI_${name}.jpg`;
 	const token = type === "player" ? "X" : "O";
 
-	return { name, token, img, type };
+	const getWins = () => wins;
+
+	const increaseWins = () => wins++;
+
+	return { name, img, token, type, getWins, increaseWins };
 };
 
 function GameController() {
 	const board = gameBoard();
 
-	let difficulty = 0;
+	// let difficulty = 0;
 	let gameState = "playing";
-	let turns = 0;
+	let turns = 0; //turns per round
+	let rounds = 0;
+	// let roundsToWin = 3;
 
-	let players = UI.getPlayers();
-	let activePlayer = players[0];
+	let players;
+
+	let activePlayer;
 
 	const winningCombinations = [
 		//Vertical
@@ -87,7 +102,18 @@ function GameController() {
 		[2, 4, 6],
 	];
 
+	const addPlayers = (array) => {
+		players = array;
+		activePlayer = players[0];
+	};
+
+	const getBoard = () => board.getBoard();
+
 	const getActivePlayer = () => activePlayer;
+
+	const switchActivePlayer = () => {
+		activePlayer = activePlayer === players[0] ? players[1] : players[0];
+	};
 
 	const getGameState = () => gameState;
 
@@ -109,9 +135,7 @@ function GameController() {
 				if (cells[combo[0]].textContent === player.token) {
 					winner = player;
 				}
-				// gameWin(winner);
-				gameState = "win";
-				console.log(`${winner.name} wins!`);
+				winRound(winner);
 			} else if (turns === 9) {
 				gameState = "draw";
 				console.log("Draw!");
@@ -120,18 +144,28 @@ function GameController() {
 		});
 	};
 
-	const switchActivePlayer = () => {
-		activePlayer = activePlayer === players[0] ? players[1] : players[0];
+	const winRound = (winner) => {
+		if (winner.getWins() < 2) {
+			winner.increaseWins();
+			gameState = "win";
+			console.log(`${winner.name} wins!`);
+			setTimeout(2000, newRound());
+		} else if (winner.getWins() === 2) {
+			winGame(winner);
+		}
+	};
+
+	const newRound = () => {
+		alert("Round" + rounds + "!");
+
+		turns = 0;
+		rounds++;
+		gameState = "playing";
+		board.reset();
 	};
 
 	const setDifficulty = (level) => {
 		difficulty = level;
-	};
-
-	const getBoard = () => board.getBoard();
-
-	const displayBoard = () => {
-		console.log("Display");
 	};
 
 	const playRound = (cell) => {
@@ -140,7 +174,6 @@ function GameController() {
 		let cellDiv = document.querySelector(
 			`button.play-cell[data-cell="${cell}"]`
 		);
-		console.log(cellDiv);
 
 		//check if move wins the round
 		if (cellIsBlank && gameState === "playing") {
@@ -154,11 +187,12 @@ function GameController() {
 		checkConditions,
 		getGameState,
 		getActivePlayer,
+		addPlayers,
 		getBoard,
 	};
 }
 
-function ScreenController() {
+function ScreenController(playersArray) {
 	const game = GameController();
 	const boardDiv = document.querySelector(".grid");
 
@@ -194,10 +228,16 @@ function ScreenController() {
 
 	boardDiv.addEventListener("click", cellClickHandler);
 
-	updateScreen();
+	const start = () => {
+		console.log(playersArray);
+		game.addPlayers(playersArray);
+		updateScreen();
+	};
+
+	return { start };
 }
 
-const getCharacterChoices = () => {
+const playerUI = (() => {
 	const heros = ["Byte", "Titan", "Claw", "Ace"];
 	const ai = ["Nexus", "Cipher", "Omega"];
 	const players = [];
@@ -314,12 +354,9 @@ const getCharacterChoices = () => {
 			aiDiv.style.display = "none";
 			players.push(newPlayer);
 
-			ScreenController();
+			const UI = ScreenController(players);
+			UI.start();
 		}
 	}
 	addButtonListeners();
-
-	return { getPlayers };
-};
-
-const UI = getCharacterChoices();
+})();
