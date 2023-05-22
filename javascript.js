@@ -1,7 +1,7 @@
 let audioOn = true;
 
 function Cell() {
-	// Cell values:
+	// Values:
 	// "" = empty
 	// 1 = player
 	// 2 = ai
@@ -14,7 +14,7 @@ function Cell() {
 	};
 
 	const reset = () => {
-		value = 0;
+		value = "";
 	};
 
 	return { getValue, addToken, reset };
@@ -59,7 +59,7 @@ function GameController() {
 	let playerWins = 0;
 	let aiWins = 0;
 
-	const players = game.getPlayers;
+	let players = UI.getPlayers();
 
 	let activePlayer = players[0];
 
@@ -141,40 +141,6 @@ const getCharacterChoices = () => {
 		});
 	}
 
-	function changeImage(e) {
-		const audioBeep = new Audio("/sound/beep.mp3");
-
-		audioOn ? audioBeep.play() : null;
-
-		// Get character name and type on button hover
-		const name = characterName(e);
-		const type = characterType(name);
-
-		updateImage(name, type);
-	}
-
-	const characterName = (e) => {
-		const characterName = e.target
-			.closest(".button-container")
-			.getAttribute("id");
-
-		return characterName;
-	};
-
-	const characterType = (characterName) => {
-		let characterType;
-		heros.forEach((hero) => {
-			if (hero === characterName) {
-				characterType = "player";
-			}
-		});
-		if (!characterType) {
-			characterType = "ai";
-		}
-
-		return characterType;
-	};
-
 	function updateImage(name, type) {
 		//Select appropriate screen and image prefix to match DOM
 		const screen = type === "player" ? "hero" : "opponent";
@@ -186,6 +152,28 @@ const getCharacterChoices = () => {
 		imageDiv.style.backgroundImage = `url(/img/${imgPrefix}${name}.jpg)`;
 
 		updateScreenText(name, nameSpan);
+	}
+
+	function characterName(e) {
+		const characterName = e.target
+			.closest(".button-container")
+			.getAttribute("id");
+
+		return characterName;
+	}
+
+	function characterType(characterName) {
+		let characterType;
+		heros.forEach((hero) => {
+			if (hero === characterName) {
+				characterType = "player";
+			}
+		});
+		if (!characterType) {
+			characterType = "ai";
+		}
+
+		return characterType;
 	}
 
 	function updateScreenText(name, nameSpan) {
@@ -212,6 +200,18 @@ const getCharacterChoices = () => {
 		}, 30);
 	}
 
+	function changeImage(e) {
+		const audioBeep = new Audio("/sound/beep.mp3");
+
+		audioOn ? audioBeep.play() : null;
+
+		// Get character name and type on button hover
+		const name = characterName(e);
+		const type = characterType(name);
+
+		updateImage(name, type);
+	}
+
 	function selectCharacter(e) {
 		const playersDiv = document.querySelector(".players");
 		const aiDiv = document.querySelector(".ai");
@@ -219,29 +219,33 @@ const getCharacterChoices = () => {
 		const audioAI = new Audio("/sound/enemy.mp3");
 		const audioR1 = new Audio("/sound/round1.mp3");
 
-		const name = characterName(e);
-		const type = characterType(name);
+		let name = characterName(e);
+		let type = characterType(name);
 
-		const newPlayer = newCharacter(name, type);
+		let newPlayer = newCharacter(name, type);
 
 		//play a selection sound and hide buttons on click
 		if (stageOfPlay === "choosePlayer") {
-			playersDiv.style.display = "none";
 			audioOn ? audioAI.play() : null;
 			stageOfPlay = "chooseAI";
+
+			playersDiv.style.display = "none";
 			aiDiv.style.display = "flex";
-			players.push(newCharacter);
+
+			players.push(newPlayer);
 		} else if (stageOfPlay === "chooseAI") {
-			aiDiv.style.display = "none";
 			audioOn ? audioR1.play() : null;
 			stageOfPlay = "round";
-			players.push(newCharacter);
+
+			aiDiv.style.display = "none";
+			players.push(newPlayer);
+
+			ScreenController();
 		}
 	}
-
 	addButtonListeners();
 
 	return { getPlayers };
 };
 
-const game = getCharacterChoices();
+const UI = getCharacterChoices();
