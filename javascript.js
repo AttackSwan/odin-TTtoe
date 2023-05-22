@@ -5,19 +5,29 @@ function Cell() {
 	// "" = empty
 	// 1 = player
 	// 2 = ai
+	const playerColor = "rgb(var(--hero-color))";
+	const aiColor = "rgb(var(--ai-color))";
 	let value = "";
+	let color = "";
 
 	const getValue = () => value;
 
 	const addToken = (token) => {
 		value = token;
+		setColor(token);
 	};
+
+	const setColor = (token) => {
+		color = token === "X" ? playerColor : aiColor;
+	};
+
+	const getColor = () => color;
 
 	const reset = () => {
 		value = "";
 	};
 
-	return { getValue, addToken, reset };
+	return { getValue, addToken, getColor, reset };
 }
 
 function gameBoard() {
@@ -50,7 +60,7 @@ const newCharacter = (name, type) => {
 		type === "player" ? `/img/Hero_${name}.jpg` : `/img/AI_${name}.jpg`;
 	const token = type === "player" ? "X" : "O";
 
-	return { name, token, img };
+	return { name, token, img, type };
 };
 
 function GameController() {
@@ -127,6 +137,10 @@ function GameController() {
 	const playRound = (cell) => {
 		turns++;
 		let cellIsBlank = board.checkCellBlank(cell);
+		let cellDiv = document.querySelector(
+			`button.play-cell[data-cell="${cell}"]`
+		);
+		console.log(cellDiv);
 
 		//check if move wins the round
 		if (cellIsBlank && gameState === "playing") {
@@ -158,6 +172,7 @@ function ScreenController() {
 			cellButton.classList.add("play-cell");
 			cellButton.dataset.cell = index;
 			cellButton.textContent = cell.getValue();
+			cellButton.style.color = cell.getColor();
 			boardDiv.appendChild(cellButton);
 		});
 
