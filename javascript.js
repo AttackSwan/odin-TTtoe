@@ -1,5 +1,3 @@
-let audioOn = true;
-
 function Cell() {
 	// Values:
 	// "" = empty
@@ -60,25 +58,24 @@ function gameBoard() {
 	return { getBoard, checkCellBlank, setToken, reset };
 }
 
-const newCharacter = (name, type) => {
+const newCharacter = (name, type, skill) => {
 	let wins = 0;
 
-	// Ensure player image is in the format "Hero_Name.jpg"
-	const img =
-		type === "player" ? `/img/Hero_${name}.jpg` : `/img/AI_${name}.jpg`;
 	const token = type === "player" ? "X" : "O";
 
+	const getName = () => name;
+	const getToken = () => token;
+	const getType = () => type;
 	const getWins = () => wins;
-
 	const increaseWins = () => wins++;
+	const getSkill = () => skill;
 
-	return { name, img, token, type, getWins, increaseWins };
+	return { getName, getToken, getType, getSkill, getWins, increaseWins };
 };
 
 function GameController() {
 	const board = gameBoard();
 
-	// let difficulty = 0;
 	let gameState = "playing";
 	let turns = 0; //turns per round
 	let rounds = 0;
@@ -132,7 +129,7 @@ function GameController() {
 				cells[combo[0]].textContent != ""
 			) {
 				//check if win uses player's token otherwise default to ai
-				if (cells[combo[0]].textContent === player.token) {
+				if (cells[combo[0]].textContent === player.getToken()) {
 					winner = player;
 				}
 				winRound(winner);
@@ -148,7 +145,7 @@ function GameController() {
 		if (winner.getWins() < 2) {
 			winner.increaseWins();
 			gameState = "win";
-			console.log(`${winner.name} wins!`);
+			console.log(`${winner.getName()} wins!`);
 			setTimeout(2000, newRound());
 		} else if (winner.getWins() === 2) {
 			winGame(winner);
@@ -164,10 +161,6 @@ function GameController() {
 		board.reset();
 	};
 
-	const setDifficulty = (level) => {
-		difficulty = level;
-	};
-
 	const playRound = (cell) => {
 		turns++;
 		let cellIsBlank = board.checkCellBlank(cell);
@@ -177,7 +170,7 @@ function GameController() {
 
 		//check if move wins the round
 		if (cellIsBlank && gameState === "playing") {
-			board.setToken(cell, getActivePlayer().token);
+			board.setToken(cell, getActivePlayer().getToken());
 			switchActivePlayer();
 		}
 	};
@@ -243,6 +236,8 @@ const Initialise = (() => {
 	const players = [];
 
 	let stageOfPlay = "choosePlayer"; // entry into game
+	let soundOn = false;
+	let musicOn = false;
 
 	function addListeners() {
 		const glitchButtons = document.querySelectorAll(".glitch-button");
@@ -256,13 +251,11 @@ const Initialise = (() => {
 		});
 
 		soundToggle.addEventListener("change", function () {
-			variable1 = toggle1.checked;
-			// Perform any additional actions based on the updated state
+			soundOn = soundToggle.checked;
 		});
 
 		musicToggle.addEventListener("change", function () {
-			variable2 = toggle2.checked;
-			// Perform any additional actions based on the updated state
+			musicOn = musicToggle.checked;
 		});
 
 		acceptButton.addEventListener("click", loadUI);
@@ -270,6 +263,7 @@ const Initialise = (() => {
 
 	function loadUI() {
 		const audioHero = new Audio("/sound/hero.mp3");
+		const audioMusic = new Audio("/sound/music.mp3");
 		const optionsDiv = document.querySelector(".options");
 		const hiddenGameElements = [
 			document.querySelector(".screen.hero"),
@@ -278,7 +272,8 @@ const Initialise = (() => {
 			document.querySelector(".players"),
 		];
 
-		audioOn ? audioHero.play() : null;
+		soundOn ? audioHero.play() : null;
+		musicOn ? audioMusic.play() : null;
 
 		optionsDiv.style.display = "none";
 		hiddenGameElements.forEach((element) => {
@@ -321,6 +316,16 @@ const Initialise = (() => {
 		return characterType;
 	}
 
+	function characterSkill(name) {
+		const skills = {
+			Nexus: 1,
+			Cipher: 2,
+			Omega: 3,
+		};
+		const skill = skills[name] || 0;
+		return skill;
+	}
+
 	function updateScreenText(name, nameSpan) {
 		//Make letters cycle randomly when hero image is changed
 		//Return new hero name
@@ -348,7 +353,7 @@ const Initialise = (() => {
 	function changeImage(e) {
 		const audioBeep = new Audio("/sound/beep.mp3");
 
-		audioOn ? audioBeep.play() : null;
+		soundOn ? audioBeep.play() : null;
 
 		// Get character name and type on button hover
 		const name = characterName(e);
@@ -366,12 +371,13 @@ const Initialise = (() => {
 
 		let name = characterName(e);
 		let type = characterType(name);
+		let skill = characterSkill(name);
 
-		let newPlayer = newCharacter(name, type);
+		let newPlayer = newCharacter(name, type, skill);
 
 		//play a selection sound and hide buttons on click
 		if (stageOfPlay === "choosePlayer") {
-			audioOn ? audioAI.play() : null;
+			soundOn ? audioAI.play() : null;
 			stageOfPlay = "chooseAI";
 
 			playersDiv.style.display = "none";
@@ -379,7 +385,7 @@ const Initialise = (() => {
 
 			players.push(newPlayer);
 		} else if (stageOfPlay === "chooseAI") {
-			audioOn ? audioR1.play() : null;
+			soundOn ? audioR1.play() : null;
 			stageOfPlay = "round";
 
 			aiDiv.style.display = "none";
