@@ -192,7 +192,7 @@ function GameController() {
 	};
 }
 
-function ScreenController(playersArray) {
+function ScreenController() {
 	const game = GameController();
 	const boardDiv = document.querySelector(".grid");
 
@@ -228,8 +228,7 @@ function ScreenController(playersArray) {
 
 	boardDiv.addEventListener("click", cellClickHandler);
 
-	const start = () => {
-		console.log(playersArray);
+	const start = (playersArray) => {
 		game.addPlayers(playersArray);
 		updateScreen();
 	};
@@ -237,21 +236,53 @@ function ScreenController(playersArray) {
 	return { start };
 }
 
-const playerUI = (() => {
+const Initialise = (() => {
+	const UI = ScreenController();
 	const heros = ["Byte", "Titan", "Claw", "Ace"];
 	const ai = ["Nexus", "Cipher", "Omega"];
 	const players = [];
 
-	const glitchButtons = document.querySelectorAll(".glitch-button");
-
 	let stageOfPlay = "choosePlayer"; // entry into game
 
-	const getPlayers = () => players;
+	function addListeners() {
+		const glitchButtons = document.querySelectorAll(".glitch-button");
+		const soundToggle = document.getElementById("sound-toggle");
+		const musicToggle = document.getElementById("music-toggle");
+		const acceptButton = document.getElementById("accept-button");
 
-	function addButtonListeners() {
 		glitchButtons.forEach((button) => {
 			button.addEventListener("mouseenter", changeImage);
 			button.addEventListener("click", selectCharacter);
+		});
+
+		soundToggle.addEventListener("change", function () {
+			variable1 = toggle1.checked;
+			// Perform any additional actions based on the updated state
+		});
+
+		musicToggle.addEventListener("change", function () {
+			variable2 = toggle2.checked;
+			// Perform any additional actions based on the updated state
+		});
+
+		acceptButton.addEventListener("click", loadUI);
+	}
+
+	function loadUI() {
+		const audioHero = new Audio("/sound/hero.mp3");
+		const optionsDiv = document.querySelector(".options");
+		const hiddenGameElements = [
+			document.querySelector(".screen.hero"),
+			document.querySelector(".screen.opponent"),
+			document.querySelector(".board"),
+			document.querySelector(".players"),
+		];
+
+		audioOn ? audioHero.play() : null;
+
+		optionsDiv.style.display = "none";
+		hiddenGameElements.forEach((element) => {
+			element.style.display = "flex";
 		});
 	}
 
@@ -354,9 +385,8 @@ const playerUI = (() => {
 			aiDiv.style.display = "none";
 			players.push(newPlayer);
 
-			const UI = ScreenController(players);
-			UI.start();
+			UI.start(players);
 		}
 	}
-	addButtonListeners();
+	addListeners();
 })();
