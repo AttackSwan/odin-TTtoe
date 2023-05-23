@@ -170,6 +170,7 @@ function GameController() {
 				if (cell0 === player.getToken()) {
 					winner = player;
 				}
+				screenController.updateScreen();
 				winRound(winner);
 			} else if (turns === 9) {
 				gameState = "draw";
@@ -177,6 +178,10 @@ function GameController() {
 				// gameDraw();
 			}
 		});
+
+		if (gameState === "playing") {
+			switchActivePlayer();
+		}
 	};
 
 	const winRound = (winner) => {
@@ -184,7 +189,7 @@ function GameController() {
 			winner.increaseWins();
 			gameState = "win";
 			console.log(`${winner.getName()} wins!`);
-			setTimeout(2000, newRound());
+			// CALL NEW ROUND FORM
 		} else if (winner.getWins() === 2) {
 			winGame(winner);
 		}
@@ -209,7 +214,8 @@ function GameController() {
 		//check if move wins the round
 		if (cellIsBlank && gameState === "playing") {
 			board.setToken(cell, getActivePlayer().getToken());
-			switchActivePlayer();
+			checkConditions();
+			// switchActivePlayer();
 		}
 	};
 
@@ -223,50 +229,10 @@ function GameController() {
 	};
 }
 
-function ScreenController() {
+const UI = () => {
+	// const UI = ScreenController();
 	const game = GameController();
 	const boardDiv = document.querySelector(".grid");
-
-	const updateScreen = () => {
-		const board = game.getBoard();
-		boardDiv.textContent = "";
-
-		//create board grid
-		board.forEach((cell, index) => {
-			const cellButton = document.createElement("button");
-			cellButton.classList.add("play-cell");
-			cellButton.dataset.cell = index;
-			cellButton.textContent = cell.getValue();
-			cellButton.style.color = cell.getColor();
-			boardDiv.appendChild(cellButton);
-		});
-
-		//Check for draw or victory after cell update
-		game.checkConditions();
-	};
-
-	//add cell listeners
-	function cellClickHandler(e) {
-		const selectedCell = e.target.dataset.cell;
-		//Check cell was clicked
-		if (!selectedCell) return;
-
-		game.playRound(selectedCell);
-		updateScreen();
-	}
-
-	boardDiv.addEventListener("click", cellClickHandler);
-
-	const start = (playersArray) => {
-		game.addPlayers(playersArray);
-		updateScreen();
-	};
-
-	return { start };
-}
-
-const Initialise = (() => {
-	const UI = ScreenController();
 	const heros = ["Byte", "Titan", "Claw", "Ace"];
 	const ai = ["Nexus", "Cipher", "Omega"];
 	const players = [];
@@ -275,7 +241,7 @@ const Initialise = (() => {
 	let soundOn = false;
 	let musicOn = false;
 
-	function addListeners() {
+	function addOptionsListeners() {
 		const glitchButtons = document.querySelectorAll(".glitch-button");
 		const soundToggle = document.getElementById("sound-toggle");
 		const musicToggle = document.getElementById("music-toggle");
@@ -295,6 +261,15 @@ const Initialise = (() => {
 		});
 
 		acceptButton.addEventListener("click", loadUI);
+	}
+
+	function cellClickHandler(e) {
+		const selectedCell = e.target.dataset.cell;
+		//Check cell was clicked
+		if (!selectedCell) return;
+
+		game.playRound(selectedCell);
+		updateScreen();
 	}
 
 	function loadUI() {
@@ -317,6 +292,32 @@ const Initialise = (() => {
 		});
 	}
 
+	const updateScreen = () => {
+		const board = game.getBoard();
+		boardDiv.textContent = "";
+
+		//create board grid
+		board.forEach((cell, index) => {
+			const cellButton = document.createElement("button");
+			cellButton.classList.add("play-cell");
+			cellButton.dataset.cell = index;
+			cellButton.textContent = cell.getValue();
+			cellButton.style.color = cell.getColor();
+			boardDiv.appendChild(cellButton);
+		});
+	};
+
+	function changeImage(e) {
+		const audioBeep = new Audio("/sound/beep.mp3");
+		soundOn ? audioBeep.play() : null;
+
+		// Get character name and type on button hover
+		const name = characterName(e);
+		const type = characterType(name);
+
+		updateImage(name, type);
+	}
+
 	function updateImage(name, type) {
 		//Select appropriate screen and image prefix to match DOM
 		const screen = type === "player" ? "hero" : "opponent";
@@ -328,6 +329,63 @@ const Initialise = (() => {
 		imageDiv.style.backgroundImage = `url(/img/${imgPrefix}${name}.jpg)`;
 
 		updateScreenText(name, nameSpan);
+	}
+
+	function updateScreenText(name, nameSpan) {
+		//Make letters cycle randomly when hero image is changed
+		//Return new hero name
+		const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		let interval = null;
+		let iteration = 0;
+		clearInterval(interval);
+		interval = setInterval(() => {
+			nameSpan.innerText = nameSpan.dataset.value
+				.split("")
+				.map((letter, index) => {
+					if (index < iteration) {
+						return name[index];
+					}
+					return letters[Math.floor(Math.random() * 26)];
+				})
+				.join("");
+			if (iteration >= nameSpan.dataset.value.length) {
+				clearInterval(interval);
+			}
+			iteration += 1 / 3;
+		}, 30);
+	}
+
+	function selectCharacter(e) {
+		const playersDiv = document.querySelector(".players");
+		const aiDiv = document.querySelector(".ai");
+		const gameBoard = document.querySelector(".board");
+		const audioAI = new Audio("/sound/enemy.mp3");
+		const audioR1 = new Audio("/sound/round1.mp3");
+
+		let name = characterName(e);
+		let type = characterType(name);
+		let skill = characterSkill(name);
+
+		let newPlayer = newCharacter(name, type, skill);
+
+		//play a selection sound and hide buttons on click
+		if (stageOfPlay === "choosePlayer") {
+			soundOn ? audioAI.play() : null;
+			stageOfPlay = "chooseAI";
+
+			playersDiv.style.display = "none";
+			aiDiv.style.display = "flex";
+
+			players.push(newPlayer);
+		} else if (stageOfPlay === "chooseAI") {
+			soundOn ? audioR1.play() : null;
+			stageOfPlay = "round";
+
+			aiDiv.style.display = "none";
+			players.push(newPlayer);
+
+			startGame();
+		}
 	}
 
 	function characterName(e) {
@@ -362,72 +420,14 @@ const Initialise = (() => {
 		return skill;
 	}
 
-	function updateScreenText(name, nameSpan) {
-		//Make letters cycle randomly when hero image is changed
-		//Return new hero name
-		const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		let interval = null;
-		let iteration = 0;
-		clearInterval(interval);
-		interval = setInterval(() => {
-			nameSpan.innerText = nameSpan.dataset.value
-				.split("")
-				.map((letter, index) => {
-					if (index < iteration) {
-						return name[index];
-					}
-					return letters[Math.floor(Math.random() * 26)];
-				})
-				.join("");
-			if (iteration >= nameSpan.dataset.value.length) {
-				clearInterval(interval);
-			}
-			iteration += 1 / 3;
-		}, 30);
-	}
+	const startGame = () => {
+		boardDiv.addEventListener("click", cellClickHandler);
+		game.addPlayers(players);
+		updateScreen();
+	};
+	addOptionsListeners();
 
-	function changeImage(e) {
-		const audioBeep = new Audio("/sound/beep.mp3");
-		soundOn ? audioBeep.play() : null;
+	return { updateScreen };
+};
 
-		// Get character name and type on button hover
-		const name = characterName(e);
-		const type = characterType(name);
-
-		updateImage(name, type);
-	}
-
-	function selectCharacter(e) {
-		const playersDiv = document.querySelector(".players");
-		const aiDiv = document.querySelector(".ai");
-		const gameBoard = document.querySelector(".board");
-		const audioAI = new Audio("/sound/enemy.mp3");
-		const audioR1 = new Audio("/sound/round1.mp3");
-
-		let name = characterName(e);
-		let type = characterType(name);
-		let skill = characterSkill(name);
-
-		let newPlayer = newCharacter(name, type, skill);
-
-		//play a selection sound and hide buttons on click
-		if (stageOfPlay === "choosePlayer") {
-			soundOn ? audioAI.play() : null;
-			stageOfPlay = "chooseAI";
-
-			playersDiv.style.display = "none";
-			aiDiv.style.display = "flex";
-
-			players.push(newPlayer);
-		} else if (stageOfPlay === "chooseAI") {
-			soundOn ? audioR1.play() : null;
-			stageOfPlay = "round";
-
-			aiDiv.style.display = "none";
-			players.push(newPlayer);
-
-			UI.start(players);
-		}
-	}
-	addListeners();
-})();
+const screenController = UI();
