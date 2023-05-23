@@ -39,6 +39,16 @@ function gameBoard() {
 
 	const getBoard = () => board;
 
+	const getAvailable = () => {
+		let emptyCells = [];
+		for (i = 0; i < cells; i++) {
+			if (board[i].getValue() === "") {
+				emptyCells.push(i);
+			}
+		}
+		return emptyCells;
+	};
+
 	const checkCellBlank = (cell) => {
 		return board[cell].getValue() === "" ? true : false;
 	};
@@ -55,7 +65,7 @@ function gameBoard() {
 		}
 	};
 
-	return { getBoard, checkCellBlank, setToken, reset };
+	return { getBoard, getAvailable, checkCellBlank, setToken, reset };
 }
 
 const newCharacter = (name, type, skill) => {
@@ -110,26 +120,54 @@ function GameController() {
 
 	const switchActivePlayer = () => {
 		activePlayer = activePlayer === players[0] ? players[1] : players[0];
+		activePlayer.getType() === "ai" ? aiPlayRound() : null;
+	};
+
+	const aiPlayRound = () => {
+		let skill = activePlayer.getSkill();
+		const skillActions = {
+			1: NexusPlayRound,
+			2: CipherPlayRound,
+			3: OmegaPlayRound,
+		};
+		const aiPlays = skillActions[skill];
+		aiPlays();
+	};
+
+	const NexusPlayRound = () => {
+		//Randomly choose an empty cell
+		const emptyCells = board.getAvailable();
+		let randomCell =
+			emptyCells[Math.floor(Math.random() * emptyCells.length)];
+		playRound(randomCell);
+	};
+
+	const CipherPlayRound = () => {
+		console.log("Cipher plays a round");
+	};
+
+	const OmegaPlayRound = () => {
+		console.log("Omega plays a round");
 	};
 
 	const getGameState = () => gameState;
 
 	const checkConditions = () => {
-		const cells = document.querySelectorAll(".play-cell");
+		let currentBoard = board.getBoard();
+		let player = players[0];
+		let ai = players[1];
+		let winner = ai;
 
 		winningCombinations.forEach((combo) => {
-			let player = players[0];
-			let ai = players[1];
-			let winner = ai;
-
+			let cell0 = currentBoard[combo[0]].getValue();
+			let cell1 = currentBoard[combo[1]].getValue();
+			let cell2 = currentBoard[combo[2]].getValue();
 			// Check if winning cells all match and are not blank
-			if (
-				cells[combo[0]].textContent == cells[combo[1]].textContent &&
-				cells[combo[1]].textContent == cells[combo[2]].textContent &&
-				cells[combo[0]].textContent != ""
-			) {
+			if (cell0 == cell1 && cell1 == cell2 && cell0 != "") {
 				//check if win uses player's token otherwise default to ai
-				if (cells[combo[0]].textContent === player.getToken()) {
+				gameState = "win";
+
+				if (cell0 === player.getToken()) {
 					winner = player;
 				}
 				winRound(winner);
@@ -204,9 +242,7 @@ function ScreenController() {
 		});
 
 		//Check for draw or victory after cell update
-		if (game.getGameState() === "playing") {
-			game.checkConditions();
-		}
+		game.checkConditions();
 	};
 
 	//add cell listeners
@@ -352,7 +388,6 @@ const Initialise = (() => {
 
 	function changeImage(e) {
 		const audioBeep = new Audio("/sound/beep.mp3");
-
 		soundOn ? audioBeep.play() : null;
 
 		// Get character name and type on button hover
