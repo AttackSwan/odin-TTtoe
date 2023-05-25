@@ -77,10 +77,21 @@ const newCharacter = (name, type, skill) => {
 	const getToken = () => token;
 	const getType = () => type;
 	const getWins = () => wins;
+	const setWins = (numWins) => {
+		wins = numWins;
+	};
 	const increaseWins = () => wins++;
 	const getSkill = () => skill;
 
-	return { getName, getToken, getType, getSkill, getWins, increaseWins };
+	return {
+		getName,
+		getToken,
+		getType,
+		getSkill,
+		getWins,
+		setWins,
+		increaseWins,
+	};
 };
 
 function GameController() {
@@ -212,18 +223,40 @@ function GameController() {
 	};
 
 	const drawRound = () => {
-		console.log("Draw!");
 		const drawText = "DRAW!";
 		const statusText = getStatusText();
 		screenController.showOptions(true);
 		screenController.nextRound(drawText, statusText);
 	};
 
-	const winGame = () => {};
+	const winGame = () => {
+		const newGameButton = document.getElementById("next-round");
+		const hero = players[0];
+		const ai = players[1];
+		let winner = ai;
+		let statusText =
+			"You're not going to let them get away with it are you?!";
+		gameState = "gameOver";
+
+		if (hero.getWins() === 3) {
+			winner = hero;
+			statusText = "CONGRATULATIONS!";
+		}
+
+		let winText = `${winner.getName()} wins the game!`;
+
+		newGameButton.textContent = "PLAY AGAIN!";
+		screenController.nextRound(winText, statusText);
+		screenController.showOptions(true);
+	};
 
 	const newRound = () => {
 		screenController.showOptions(false);
 
+		if (gameState === "gameOver") {
+			rounds = 0;
+			players[0].setWins(0);
+		}
 		turns = 0;
 		gameState = "playing";
 		activePlayer = players[0]; //start with player
@@ -462,8 +495,6 @@ const UI = () => {
 	}
 
 	const startGame = () => {
-		// Turn off toggles and play button so form can be reused on after rounds
-
 		boardDiv.addEventListener("click", cellClickHandler);
 		game.addPlayers(players);
 		updateScreen();
