@@ -205,12 +205,16 @@ function GameController() {
 	};
 
 	const newRound = () => {
-		alert("Round" + rounds + "!");
+		const roundForm = document.querySelector(".options");
+		roundForm.style.display = "none";
 
 		turns = 0;
 		rounds++;
 		gameState = "playing";
+		activePlayer = players[0]; //start with player
+
 		board.reset();
+		screenController.updateScreen();
 	};
 
 	const playRound = (cell) => {
@@ -230,6 +234,7 @@ function GameController() {
 
 	return {
 		playRound,
+		newRound,
 		checkConditions,
 		getGameState,
 		getActivePlayer,
@@ -255,6 +260,7 @@ const UI = () => {
 		const soundToggle = document.getElementById("sound-toggle");
 		const musicToggle = document.getElementById("music-toggle");
 		const acceptButton = document.getElementById("accept-button");
+		const roundButton = document.getElementById("next-round");
 
 		glitchButtons.forEach((button) => {
 			button.addEventListener("mouseenter", changeImage);
@@ -270,6 +276,7 @@ const UI = () => {
 		});
 
 		acceptButton.addEventListener("click", loadUI);
+		roundButton.addEventListener("click", game.newRound);
 	}
 
 	function cellClickHandler(e) {
