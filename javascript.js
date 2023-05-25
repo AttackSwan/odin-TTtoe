@@ -174,12 +174,13 @@ function GameController() {
 
 				screenController.updateScreen();
 				winRound(winner);
-			} else if (turns === 9) {
-				gameState = "draw";
-				console.log("Draw!");
-				// gameDraw();
 			}
 		});
+
+		if (turns === 9 && gameState === "playing") {
+			gameState = "draw";
+			drawRound();
+		}
 
 		if (gameState === "playing") {
 			switchActivePlayer();
@@ -194,24 +195,40 @@ function GameController() {
 
 		let winText = winnerType === "player" ? "wins!" : "loses!";
 		let roundText = `${heroName} ${winText}`;
-		let statusText = `${players[0].getWins()} : ${players[1].getWins()}`;
+		let statusText = getStatusText();
 
 		if (winner.getWins() < 3) {
 			gameState = "win";
+			screenController.showOptions(true);
 			screenController.nextRound(roundText, statusText);
 		} else if (winner.getWins() === 3) {
 			winGame(winner);
 		}
 	};
 
+	const getStatusText = () => {
+		let statusText = `${players[0].getWins()} : ${players[1].getWins()}`;
+		return statusText;
+	};
+
+	const drawRound = () => {
+		console.log("Draw!");
+		const drawText = "DRAW!";
+		const statusText = getStatusText();
+		screenController.showOptions(true);
+		screenController.nextRound(drawText, statusText);
+	};
+
+	const winGame = () => {};
+
 	const newRound = () => {
-		const roundForm = document.querySelector(".options");
-		roundForm.style.display = "none";
+		screenController.showOptions(false);
 
 		turns = 0;
-		rounds++;
 		gameState = "playing";
 		activePlayer = players[0]; //start with player
+
+		rounds = gameState !== "draw" ? rounds++ : rounds; //don't increase on draw
 
 		board.reset();
 		screenController.updateScreen();
@@ -228,7 +245,6 @@ function GameController() {
 		if (cellIsBlank && gameState === "playing") {
 			board.setToken(cell, getActivePlayer().getToken());
 			checkConditions();
-			// switchActivePlayer();
 		}
 	};
 
@@ -251,7 +267,7 @@ const UI = () => {
 	const ai = ["Nexus", "Cipher", "Omega"];
 	const players = [];
 
-	let stageOfPlay = "choosePlayer"; // entry into game
+	let stageOfPlay = "choosePlayer"; // entry into options UI
 	let soundOn = false;
 	let musicOn = false;
 
@@ -291,21 +307,30 @@ const UI = () => {
 	function loadUI() {
 		const audioHero = new Audio("/sound/hero.mp3");
 		const audioMusic = new Audio("/sound/music.mp3");
-		const optionsDiv = document.querySelector(".options");
-		const hiddenGameElements = [
-			document.querySelector(".screen.hero"),
-			document.querySelector(".screen.opponent"),
-			document.querySelector(".board"),
-			document.querySelector(".players"),
-		];
 
 		soundOn ? audioHero.play() : null;
 		musicOn ? audioMusic.play() : null;
 
-		optionsDiv.style.display = "none";
-		hiddenGameElements.forEach((element) => {
-			element.style.display = "flex";
-		});
+		const uiElements = {
+			".screen.hero": "flex",
+			".screen.opponent": "flex",
+			".board": "flex",
+			".players": "flex",
+			".toggle": "none",
+			"#accept-button": "none",
+			"#next-round": "block",
+			".options > h2": "block",
+		};
+
+		// Set display modes for above UI elements
+		for (const selector in uiElements) {
+			if (uiElements.hasOwnProperty(selector)) {
+				const element = document.querySelector(selector);
+				element.style.display = uiElements[selector];
+			}
+		}
+
+		screenController.showOptions(false);
 	}
 
 	const updateScreen = () => {
@@ -438,26 +463,26 @@ const UI = () => {
 
 	const startGame = () => {
 		// Turn off toggles and play button so form can be reused on after rounds
-		const toggles = document.querySelector(".toggle");
-		const playButton = document.getElementById("accept-button");
-		toggles.style.display = "none";
-		playButton.style.display = "none";
 
 		boardDiv.addEventListener("click", cellClickHandler);
 		game.addPlayers(players);
 		updateScreen();
 	};
 
-	const nextRound = (roundText, statusText) => {
-		//
+	const showOptions = (on) => {
 		const roundForm = document.querySelector(".options");
+
+		if (on) {
+			roundForm.style.display = "grid";
+		} else {
+			roundForm.style.display = "none";
+		}
+	};
+
+	const nextRound = (roundText, statusText) => {
+		// Display if the player wins / loses and their current wins : losses
 		const winText = document.querySelector(".options > h1");
 		const totalsText = document.querySelector(".options > h2");
-		const playButton = document.getElementById("next-round");
-
-		roundForm.style.display = "grid";
-		playButton.style.display = "block";
-		totalsText.style.display = "block";
 
 		winText.textContent = roundText;
 		totalsText.textContent = statusText;
@@ -465,7 +490,7 @@ const UI = () => {
 
 	addOptionsListeners();
 
-	return { updateScreen, nextRound };
+	return { updateScreen, showOptions, nextRound };
 };
 
 const screenController = UI();
