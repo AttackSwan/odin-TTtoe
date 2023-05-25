@@ -163,11 +163,9 @@ function GameController() {
 
 	const getGameState = () => gameState;
 
-	const checkConditions = () => {
+	const checkIfWin = () => {
 		let currentBoard = board.getBoard();
-		let player = players[0];
-		let ai = players[1];
-		let winner = ai;
+		let isWin = false;
 
 		winningCombinations.forEach((combo) => {
 			let cell0 = currentBoard[combo[0]].getValue();
@@ -177,16 +175,17 @@ function GameController() {
 			// Check if winning cells all match and are not blank
 			if (cell0 == cell1 && cell1 == cell2 && cell0 != "") {
 				gameState = "win";
-
-				//check if win uses player's token otherwise default to ai
-				if (cell0 === player.getToken()) {
-					winner = player;
-				}
-
-				screenController.updateScreen();
-				winRound(winner);
+				isWin = true;
 			}
 		});
+		return isWin;
+	};
+
+	const checkConditions = () => {
+		if (checkIfWin()) {
+			screenController.updateScreen();
+			winRound(activePlayer);
+		}
 
 		if (turns === 9 && gameState === "playing") {
 			gameState = "draw";
@@ -234,8 +233,7 @@ function GameController() {
 		const hero = players[0];
 		const ai = players[1];
 		let winner = ai;
-		let statusText =
-			"You're not going to let them get away with it are you?!";
+		let statusText = "That was just a warm up!";
 		gameState = "gameOver";
 
 		if (hero.getWins() === 3) {
@@ -256,6 +254,7 @@ function GameController() {
 		if (gameState === "gameOver") {
 			rounds = 0;
 			players[0].setWins(0);
+			players[1].setWins(0);
 		}
 		turns = 0;
 		gameState = "playing";
