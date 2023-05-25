@@ -89,7 +89,7 @@ function GameController() {
 	let gameState = "playing";
 	let turns = 0; //turns per round
 	let rounds = 0;
-	// let roundsToWin = 3;
+	let roundsToWin = 3;
 
 	let players;
 
@@ -162,14 +162,16 @@ function GameController() {
 			let cell0 = currentBoard[combo[0]].getValue();
 			let cell1 = currentBoard[combo[1]].getValue();
 			let cell2 = currentBoard[combo[2]].getValue();
+
 			// Check if winning cells all match and are not blank
 			if (cell0 == cell1 && cell1 == cell2 && cell0 != "") {
-				//check if win uses player's token otherwise default to ai
 				gameState = "win";
 
+				//check if win uses player's token otherwise default to ai
 				if (cell0 === player.getToken()) {
 					winner = player;
 				}
+
 				screenController.updateScreen();
 				winRound(winner);
 			} else if (turns === 9) {
@@ -185,12 +187,19 @@ function GameController() {
 	};
 
 	const winRound = (winner) => {
-		if (winner.getWins() < 2) {
-			winner.increaseWins();
+		const winnerType = winner.getType();
+		const heroName = players[0].getName();
+
+		winner.increaseWins();
+
+		let winText = winnerType === "player" ? "wins!" : "loses!";
+		let roundText = `${heroName} ${winText}`;
+		let statusText = `${players[0].getWins()} : ${players[1].getWins()}`;
+
+		if (winner.getWins() < 3) {
 			gameState = "win";
-			console.log(`${winner.getName()} wins!`);
-			// CALL NEW ROUND FORM
-		} else if (winner.getWins() === 2) {
+			screenController.nextRound(roundText, statusText);
+		} else if (winner.getWins() === 3) {
 			winGame(winner);
 		}
 	};
@@ -421,13 +430,35 @@ const UI = () => {
 	}
 
 	const startGame = () => {
+		// Turn off toggles and play button so form can be reused on after rounds
+		const toggles = document.querySelector(".toggle");
+		const playButton = document.getElementById("accept-button");
+		toggles.style.display = "none";
+		playButton.style.display = "none";
+
 		boardDiv.addEventListener("click", cellClickHandler);
 		game.addPlayers(players);
 		updateScreen();
 	};
+
+	const nextRound = (roundText, statusText) => {
+		//
+		const roundForm = document.querySelector(".options");
+		const winText = document.querySelector(".options > h1");
+		const totalsText = document.querySelector(".options > h2");
+		const playButton = document.getElementById("next-round");
+
+		roundForm.style.display = "grid";
+		playButton.style.display = "block";
+		totalsText.style.display = "block";
+
+		winText.textContent = roundText;
+		totalsText.textContent = statusText;
+	};
+
 	addOptionsListeners();
 
-	return { updateScreen };
+	return { updateScreen, nextRound };
 };
 
 const screenController = UI();
