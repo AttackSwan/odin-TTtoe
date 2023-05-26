@@ -1,8 +1,8 @@
 function Cell() {
 	// Values:
 	// "" = empty
-	// 1 = player
-	// 2 = ai
+	// X = player
+	// O = ai
 	const playerColor = "rgb(var(--hero-color))";
 	const aiColor = "rgb(var(--ai-color))";
 	let value = "";
@@ -96,22 +96,12 @@ const newCharacter = (name, type, skill) => {
 
 function GameController() {
 	const board = gameBoard();
-
-	let gameState = "playing";
-	let turns = 0; //turns per round
-	let rounds = 0;
-	let roundsToWin = 3;
-
-	let players;
-
-	let activePlayer;
-
 	const winningCombinations = [
-		//Vertical
+		//Horizontal
 		[0, 1, 2],
 		[3, 4, 5],
 		[6, 7, 8],
-		//Horizontal
+		//Vertical
 		[0, 3, 6],
 		[1, 4, 7],
 		[2, 5, 8],
@@ -119,6 +109,14 @@ function GameController() {
 		[0, 4, 8],
 		[2, 4, 6],
 	];
+
+	let gameState = "playing";
+	let turns = 0; // turns per round
+	let rounds = 0;
+	let roundsToWin = 3;
+
+	let players;
+	let activePlayer;
 
 	const addPlayers = (array) => {
 		players = array;
@@ -158,14 +156,25 @@ function GameController() {
 	};
 
 	const OmegaPlayRound = () => {
-		console.log("Omega plays a round");
+		const ai = players[1];
+		const aiToken = ai.getToken();
+		let boardContents = board.getBoard();
+		let newBoard = [];
+
+		// Create a new board array of current board values
+		for (let i = 0; i < board.getBoard().length; i++) {
+			newBoard[i] = boardContents[i].getValue();
+		}
+
+		let bestMove = minmax(newBoard, ai).index;
+		playRound(bestMove);
 	};
 
 	const getGameState = () => gameState;
 
 	const checkIfWin = () => {
-		let currentBoard = board.getBoard();
 		let isWin = false;
+		let currentBoard = board.getBoard();
 
 		winningCombinations.forEach((combo) => {
 			let cell0 = currentBoard[combo[0]].getValue();
@@ -174,11 +183,102 @@ function GameController() {
 
 			// Check if winning cells all match and are not blank
 			if (cell0 == cell1 && cell1 == cell2 && cell0 != "") {
+				// If no new board
 				gameState = "win";
 				isWin = true;
 			}
 		});
 		return isWin;
+	};
+
+	const checkMinmaxWin = (newBoard, player) => {
+		const playerToken = player.getToken();
+		let winningToken = "";
+		let isWin = false;
+
+		winningCombinations.forEach((combo) => {
+			let cell0 = newBoard[combo[0]];
+			let cell1 = newBoard[combo[1]];
+			let cell2 = newBoard[combo[2]];
+
+			// Check if winning cells all match and are not blank
+			if (cell0 === cell1 && cell1 === cell2 && cell0 !== "") {
+				winningToken = cell0;
+			}
+		});
+
+		if (winningToken === playerToken) {
+			isWin = true;
+		}
+
+		return isWin;
+	};
+
+	const minmax = (newBoard, player) => {
+		const hero = players[0];
+		const ai = players[1];
+		const availableSpots = newBoard.reduce((indices, value, index) => {
+			if (value === "") {
+				indices.push(index);
+			}
+			return indices;
+		}, []);
+
+		let moves = [];
+
+		// Check for win/loss/draw
+		if (checkMinmaxWin(newBoard, hero)) {
+			return { score: -10 };
+		} else if (checkMinmaxWin(newBoard, ai)) {
+			return { score: 10 };
+		} else if (availableSpots.length === 0) {
+			return { score: 0 };
+		}
+
+		// Check all available moves for current board
+		for (let i = 0; i < availableSpots.length; i++) {
+			let move = {};
+			move.index = availableSpots[i];
+
+			// Set empty spot to active player
+			newBoard[availableSpots[i]] = player.getToken();
+
+			if (player.getType() === "ai") {
+				const result = minmax(newBoard, hero);
+				move.score = result.score;
+			} else {
+				const result = minmax(newBoard, ai);
+				move.score = result.score;
+			}
+
+			//reset the spot to empty
+			newBoard[availableSpots[i]] = "";
+
+			// push the object to the array
+			moves.push(move);
+		}
+
+		let bestMove;
+		if (player.getType() === "ai") {
+			let bestScore = -10000;
+			for (let i = 0; i < moves.length; i++) {
+				if (moves[i].score > bestScore) {
+					bestScore = moves[i].score;
+					bestMove = i;
+				}
+			}
+		} else {
+			// Else loop over the moves and choose the move with the lowest score
+			let bestScore = 10000;
+			for (let i = 0; i < moves.length; i++) {
+				if (moves[i].score < bestScore) {
+					bestScore = moves[i].score;
+					bestMove = i;
+				}
+			}
+		}
+
+		return moves[bestMove];
 	};
 
 	const checkConditions = () => {
@@ -207,7 +307,7 @@ function GameController() {
 		let roundText = `${heroName} ${winText}`;
 		let statusText = getStatusText();
 
-		if (winner.getWins() < 3) {
+		if (winner.getWins() < roundsToWin) {
 			gameState = "win";
 			screenController.showOptions(true);
 			screenController.nextRound(roundText, statusText);
