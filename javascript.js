@@ -152,7 +152,23 @@ function GameController() {
 	};
 
 	const CipherPlayRound = () => {
-		console.log("Cipher plays a round");
+		const boardContent = board.getBoard();
+		let newBoard = [];
+
+		//Find how many tokens played
+		for (let i = 0; i < boardContent.length; i++) {
+			newBoard[i] = boardContent[i].getValue();
+		}
+
+		const count = newBoard.filter((value) => value === "O").length;
+
+		// Upgrade to heuristic evaluation if time permits
+		// Alternate beween Nexus and Omega
+		if (count % 2 > 0) {
+			OmegaPlayRound();
+		} else {
+			NexusPlayRound();
+		}
 	};
 
 	const OmegaPlayRound = () => {
@@ -343,7 +359,7 @@ function GameController() {
 
 		let winText = `${winner.getName()} wins the game!`;
 
-		newGameButton.textContent = "PLAY AGAIN!";
+		newGameButton.textContent = "PLAY AGAIN?";
 		screenController.nextRound(winText, statusText);
 		screenController.showOptions(true);
 	};
